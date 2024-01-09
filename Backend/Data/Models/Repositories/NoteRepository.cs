@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Backend.Data.Repositories
+namespace Backend.Data.Models.Repositories
 {
     public class NoteRepository
     {
@@ -50,6 +50,12 @@ namespace Backend.Data.Repositories
                 _context.Notes.Remove(noteToDelete);
                 _context.SaveChanges();
             }
+        }
+         public IEnumerable<Note> GetNotesByCategory(Category category)
+        {
+            return _context.Notes
+                .Where(note => note.Categories.Contains(category))
+                .ToList();
         }
     }
 }

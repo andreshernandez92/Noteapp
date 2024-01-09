@@ -1,10 +1,8 @@
 using AutoMapper;
 using Backend.Data.DTO;
 using Backend.Data.Models.Entities;
-using Backend.Data.Repositories;
+using Backend.Data.Models.Repositories;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Backend.Controllers
 {
@@ -69,27 +67,5 @@ namespace Backend.Controllers
             return Ok("Note deleted successfully.");
         }
 
-        [HttpGet("categories")]
-        public ActionResult<IEnumerable<CategoryDTO>> GetCategories()
-        {
-            var categories = _categoryRepository.GetCategories();
-            var categoryDTOs = _mapper.Map<IEnumerable<CategoryDTO>>(categories);
-            return Ok(categoryDTOs);
-        }
-
-        [HttpPost("categories")]
-        public ActionResult AddCategory([FromBody] CategoryDTO categoryDTO)
-        {
-            var category = _mapper.Map<Category>(categoryDTO);
-            _categoryRepository.AddCategory(category);
-            return Ok("Category added successfully.");
-        }
-
-        [HttpDelete("categories/{id}")]
-        public ActionResult RemoveCategory(int id)
-        {
-            _categoryRepository.RemoveCategory(id);
-            return Ok("Category removed successfully.");
-        }
     }
 }

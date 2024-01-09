@@ -3,7 +3,7 @@ using Backend.Data.Models.Entities;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Backend.Data.Repositories
+namespace Backend.Data.Models.Repositories
 {
     public class CategoryRepository
     {
