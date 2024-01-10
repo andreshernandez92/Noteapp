@@ -30,10 +30,31 @@ namespace Backend.Data.Models.Repositories
             return _context.Notes.Find(noteId);
         }
 
-        public void AddNote(Note note)
+                 public async Task AddNoteAsync(Note note)
         {
+            // Ensure the associated categories are also added to the context
+            foreach (var category in note.Categories)
+            {
+                // Check if the category is already in the context or not
+                var existingCategory = _context.Categories.FirstOrDefault(c => c.CategoryId == category.CategoryId);
+
+                if (existingCategory != null)
+                {
+                    // If category already exists, attach it to prevent duplicate inserts
+                    _context.Entry(existingCategory).State = EntityState.Unchanged;
+                }
+                else
+                {
+                    // If category doesn't exist, add it to the context
+                    _context.Categories.Add(category);
+                }
+            }
+
+            // Add the note to the context
             _context.Notes.Add(note);
-            _context.SaveChanges();
+
+            // Save changes to the database
+            await _context.SaveChangesAsync();
         }
 
         public void UpdateNote(Note note)

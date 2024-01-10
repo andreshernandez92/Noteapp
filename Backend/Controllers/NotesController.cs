@@ -41,7 +41,7 @@ namespace Backend.Controllers
         public ActionResult AddNote([FromBody] NoteDTO noteDTO)
         {
             var note = _mapper.Map<Note>(noteDTO);
-            _noteRepository.AddNote(note);
+            _noteRepository.AddNoteAsync(note);
             return Ok("Note added successfully.");
         }
 

@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Backend.Migrations
 {
     [DbContext(typeof(StoreContext))]
-    [Migration("20240109224213_InitialCreation")]
-    partial class InitialCreation
+    [Migration("20240110082239_Initialcreation")]
+    partial class Initialcreation
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -36,7 +36,7 @@ namespace Backend.Migrations
 
             modelBuilder.Entity("Backend.Data.Models.Entities.Note", b =>
                 {
-                    b.Property<int>("NoteId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
@@ -51,7 +51,7 @@ namespace Backend.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.HasKey("NoteId");
+                    b.HasKey("Id");
 
                     b.ToTable("Notes");
                 });
@@ -61,14 +61,14 @@ namespace Backend.Migrations
                     b.Property<int>("CategoriesCategoryId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("NotesNoteId")
+                    b.Property<int>("NotesId")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("CategoriesCategoryId", "NotesNoteId");
+                    b.HasKey("CategoriesCategoryId", "NotesId");
 
-                    b.HasIndex("NotesNoteId");
+                    b.HasIndex("NotesId");
 
-                    b.ToTable("NoteCategories", (string)null);
+                    b.ToTable("NoteCategory", (string)null);
                 });
 
             modelBuilder.Entity("CategoryNote", b =>
@@ -81,7 +81,7 @@ namespace Backend.Migrations
 
                     b.HasOne("Backend.Data.Models.Entities.Note", null)
                         .WithMany()
-                        .HasForeignKey("NotesNoteId")
+                        .HasForeignKey("NotesId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

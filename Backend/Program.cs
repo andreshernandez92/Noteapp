@@ -16,7 +16,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<NoteRepository>();
 builder.Services.AddScoped<CategoryRepository>();
 builder.Services.AddDbContext<StoreContext>(opt =>{
-    opt.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
+    opt.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")).EnableSensitiveDataLogging();
+    opt.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 });
 var app = builder.Build();
 // Configure the HTTP request pipeline.
