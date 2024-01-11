@@ -1,6 +1,6 @@
 using Backend.Data.Models;
 using Backend.Data.Models.Entities;
-using Backend.Data.DTO;
+using Backend.Data.DTOs;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
@@ -70,16 +70,16 @@ public async Task UpdateCategoryAsync(CategoryDTO updatedCategory)
     }
 }
 
-public async Task<List<NoteDTO>> GetNotesByCategoriesAsync(String categoryName, bool isArchived = false)
+public async Task<List<NoteDTO>> GetNotesByCategoriesAsync(String categoryNames, bool Archived )
 {
     var query = _context.Notes
         .Include(n => n.NoteCategories)
         .ThenInclude(nc => nc.Category)
-        .Where(n => n.Archived == isArchived);
+        .Where(n => n.Archived == Archived);
 
-    if (categoryName != null && categoryName.Any())
+    if (categoryNames != null && categoryNames.Any())
     {
-        query = query.Where(n => n.NoteCategories.Any(nc => categoryName.Contains(nc.Category.Name)));
+        query = query.Where(n => n.NoteCategories.Any(nc => categoryNames.Contains(nc.Category.Name)));
     }
 
     var notes = await query

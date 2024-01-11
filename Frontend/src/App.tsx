@@ -6,35 +6,67 @@ type Note = {
   id: number;
   title: string;
   content: string;
-  categories: string[] | Array<{ name: string }>;
+  categories: Array<{ id: number; name: string }>;
   timeCreated: string;
   timeModified: string;
   archived?: boolean;
 };
 
 const App = () => {
+  const [isArchived, setIsArchived] = useState(false);
   const [notes, setNotes] = useState<Note[]>([]);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [filterCategory, setFilterCategory] = useState<string>("");
+  const [showArchived, setShowArchived] = useState(false);
+  
 
   useEffect(() => {
     fetchNotes();
-  }, []);
+  }, [showArchived]); 
+
+  
+  useEffect(() => {
+    if (selectedNote) {
+      setTitle(selectedNote.title || "");
+      setContent(selectedNote.content || "");
+      setSelectedCategories(selectedNote.categories.map(category => (typeof category === 'string' ? category : category.name)) || []);
+      setIsArchived(selectedNote.archived || false);
+    } else {
+      // Reset input fields when no note is selected
+      setTitle("");
+      setContent("");
+      setSelectedCategories([]);
+      setIsArchived(false);
+    }
+  }, [selectedNote]);
+
+  const parseCategories = (categoriesString: string): Array<{ id: number; name: string }> => {
+    if (!categoriesString.includes(',')) {
+      // If there are no commas, treat the entire string as one category
+      return [{ id: 0, name: categoriesString.trim() }];
+    }
+  
+    return categoriesString
+      .split(",")
+      .map((category) => ({ id: 0, name: category.trim() }));
+  };
 
   const fetchNotes = async () => {
     try {
-      const fetchedNotes = await apiService.getAllNotes();
+      const fetchedNotes = showArchived
+        ? await apiService.getAllArchivedNotes()
+        : await apiService.getAllActiveNotes();
       setNotes(fetchedNotes);
     } catch (error) {
       console.error("Error fetching notes:", error);
     }
   };
 
+
   const handleUpdateNote = async (event: React.FormEvent) => {
-    event.preventDefault();
 
     if (!selectedNote) {
       return;
@@ -44,7 +76,8 @@ const App = () => {
       ...selectedNote,
       title: title || selectedNote.title,
       content: content || selectedNote.content,
-      categories: selectedCategories.length > 0 ? selectedCategories : selectedNote.categories,
+      categories: parseCategories(selectedCategories.join(",")),
+      archived: isArchived,
     };
 
     await handleSaveNote(updatedNote, true);
@@ -60,29 +93,40 @@ const App = () => {
   };
 
   const handleAddNote = async (event: React.FormEvent) => {
-    event.preventDefault();
-
     const newNote: Note = {
       id: notes.length + 1,
       title: title,
       content: content,
-      categories: selectedCategories,
+      categories: parseCategories(selectedCategories.join(",")),
+      archived: isArchived,
       timeCreated: new Date().toISOString(),
       timeModified: new Date().toISOString(),
     };
-
     await handleSaveNote(newNote, false);
   };
 
+
+ 
+
   const handleSaveNote = async (note: Note, isUpdate: boolean) => {
     try {
+      
+
       if (isUpdate) {
-        await apiService.updateNoteWithCategories(note.id, note);
+        const serverData = {
+          Title: note.title,
+          Content: note.content,
+          Archived:  isArchived,
+          CategoryUpdates: note.categories.map(category => ({ CategoryId: category.id, CategoryName: category.name })),
+        };
+        
+        await apiService.updateNoteWithCategories(note.id, serverData);
       } else {
+        
         await apiService.createNoteWithCategories(note);
       }
 
-      fetchNotes(); // Refresh the notes after saving
+      fetchNotes();
       setTitle("");
       setContent("");
       setSelectedCategories([]);
@@ -92,18 +136,40 @@ const App = () => {
     }
   };
 
+
   const handleFilterByCategory = async (event: React.FormEvent) => {
+
     event.preventDefault();
 
     try {
-      const filteredNotes = await apiService.getNotesByCategories(filterCategory, false);
-      setNotes(filteredNotes);
+      if (filterCategory === "") {
+        await handleClearFilter(); // Call the function to clear the filter
+      } else {
+        // Filter by category
+        const filteredNotes = await apiService.getNotesByCategories(filterCategory, showArchived);
+        setNotes(filteredNotes);
+      }
     } catch (error) {
-      console.error("Error filtering notes by category:", error);
+      console.error("Error filtering notes:", error);
     }
   };
 
+  const handleClearFilter = async () => {
+    try {
+      // Clear filter, fetch all notes based on archive status
+      const filteredNotes = showArchived
+        ? await apiService.getAllArchivedNotes()
+        : await apiService.getAllActiveNotes();
+
+      setNotes(filteredNotes);
+      setFilterCategory(""); // Clear the filter category
+    } catch (error) {
+      console.error("Error clearing filter:", error);
+    }
+   
+  };
   const handleAddOrUpdateNote = async () => {
+    
     if (selectedNote) {
       await handleUpdateNote({} as React.FormEvent); // Update the selected note
     } else {
@@ -111,14 +177,28 @@ const App = () => {
     }
   };
 
-  const handleArchiveNote = async (noteId: number, archive: boolean) => {
+  const handleArchiveNote = async (selectedNote: Note, archive: boolean) => {
     try {
-      await apiService.updateNoteArchiveStatus(noteId, archive);
-      fetchNotes(); // Refresh the notes after archiving/unarchiving
+      const updatedNote = {
+        title: selectedNote.title,
+        content: selectedNote.content,
+        archived: archive,
+        categoryUpdates: selectedNote.categories.map((category) => ({
+          categoryId: 0, // You need to determine the actual categoryId or handle it accordingly
+          categoryName: typeof category === 'string' ? category : category.name,
+        })),
+      };
+  
+      // Send the updated note to the API
+      await apiService.updateNoteWithCategories(selectedNote.id, updatedNote);
+  
+    // Fetch all notes again after archiving/unarchiving
+    fetchNotes();
     } catch (error) {
       console.error("Error archiving/unarchiving note:", error);
     }
   };
+  
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -128,7 +208,7 @@ const App = () => {
   return (
     <div className="app-container">
       <header className="header">
-        <h1>Futuristic Notes</h1>
+        <h1>Note App</h1>
       </header>
       <div className="main-content">
         <section className="note-form">
@@ -157,12 +237,13 @@ const App = () => {
             </div>
             <label htmlFor="archiveCheckbox">Archive Note</label>
             <div className="form-row">
-              <input
-                type="checkbox"
-                id="archiveCheckbox"
-                checked={selectedNote?.archived || false}
-                onChange={() => setSelectedNote((prevNote) => prevNote && { ...prevNote, archived: !prevNote.archived })}
-              />
+            <input
+  type="checkbox"
+  id="archiveCheckbox"
+  checked={isArchived}
+  onChange={() => setIsArchived((prevIsArchived) => !prevIsArchived)}
+/>
+
               
             </div>
             <div className="form-row">
@@ -174,8 +255,9 @@ const App = () => {
                 onChange={(event) => setSelectedCategories(event.target.value.split(",").map((cat) => cat.trim()))}
                 placeholder="Categories (comma-separated)"
               />
+               <button type="submit">{selectedNote ? "Update Note" : "Create Note"}</button>
             </div>
-            <button type="submit">{selectedNote ? "Update Note" : "Create Note"}</button>
+           
           </form>
         </section>
         <section className="filter-form">
@@ -192,14 +274,22 @@ const App = () => {
               />
             </div>
             <div className="form-row">
-              <button type="submit">Filter</button>
-              <button type="button" onClick={() => setFilterCategory("")}>
-                Clear Filter
-              </button>
-              <button type="button" onClick={() => setFilterCategory("Archived")}>
-                Show Archived
-              </button>
-            </div>
+  <button type="button" onClick={handleClearFilter}>
+    Clear Filter
+  </button>
+  <button type="submit">Filter</button>
+</div>
+<div className="form-row">
+  <button
+    type="button"
+    onClick={() => {
+      setShowArchived(!showArchived);
+      setFilterCategory(""); // Clear the filter when toggling between archived/unarchived
+    }}
+  >
+    {showArchived ? "Show Unarchived" : "Show Archived"}
+  </button>
+</div>
           </form>
         </section>
       </div>
@@ -213,10 +303,10 @@ const App = () => {
             <p>Created: {formatDate(note.timeCreated)}</p>
             <p>Modified: {formatDate(note.timeModified)}</p>
             <div className="note-actions">
-              <button onClick={() => handleDeleteNote(note.id)}>Delete</button>
-              <button onClick={() => handleArchiveNote(note.id, !note.archived)}>
-                {note.archived ? "Unarchive" : "Archive"}
-              </button>
+  <button onClick={() => handleDeleteNote(note.id)}>Delete</button>
+  <button onClick={() => handleArchiveNote(note, !note.archived)}>
+    {note.archived ? "Unarchive" : "Archive"}
+  </button>
             </div>
           </div>
         ))}

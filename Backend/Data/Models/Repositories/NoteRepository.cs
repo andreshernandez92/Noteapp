@@ -1,6 +1,6 @@
 using Backend.Data.Models;
 using Backend.Data.Models.Entities;
-using Backend.Data.DTO;
+using Backend.Data.DTOs;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
@@ -155,17 +155,18 @@ public async Task UpdateNoteWithCategoriesAsync(int id, UpdateNoteDTO updatedNot
             noteEntity.Content = updatedNote.Content;
         }
 
-        // Update Archived
+        // Update IsArchived
         noteEntity.Archived = updatedNote.Archived;
 
-        // Update note categories
+        // Remove existing note categories
+        if (noteEntity.NoteCategories != null)
+        {
+            _context.NoteCategories.RemoveRange(noteEntity.NoteCategories);
+        }
+
+        // Add updated note categories
         if (updatedNote.CategoryUpdates != null && updatedNote.CategoryUpdates.Count > 0)
         {
-            if (noteEntity.NoteCategories == null)
-            {
-                noteEntity.NoteCategories = new List<NoteCategories>();
-            }
-
             foreach (var categoryUpdate in updatedNote.CategoryUpdates)
             {
                 var category = await _context.Categories
@@ -195,6 +196,7 @@ public async Task UpdateNoteWithCategoriesAsync(int id, UpdateNoteDTO updatedNot
         throw;
     }
 }
+
 
 public async Task DeleteNoteAsync(int id)
 {

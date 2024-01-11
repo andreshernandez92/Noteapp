@@ -1,12 +1,14 @@
 // apiService.js
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:5013/api/';
+const BASE_URL = 'http://localhost:5001/api/';
 
 const apiService = {
-  createNoteWithCategories: async (noteDto) => {
+  createNoteWithCategories: async (noteDTO) => {
     try {
-      const response = await axios.post(`${BASE_URL}notes/create`, noteDto);
+   
+      
+      const response = await axios.post(`${BASE_URL}notes/create`, noteDTO);
       return response.data;
     } catch (error) {
       console.error('Error creating note with categories:', error);
@@ -30,6 +32,26 @@ const apiService = {
       return response.data;
     } catch (error) {
       console.error('Error getting all notes:', error);
+      throw error;
+    }
+  },
+
+  getAllActiveNotes: async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}notes/active`);
+      return response.data;
+    } catch (error) {
+      console.error('Error getting all active notes:', error);
+      throw error;
+    }
+  },
+
+  getAllArchivedNotes: async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}notes/archived`);
+      return response.data;
+    } catch (error) {
+      console.error('Error getting all archived notes:', error);
       throw error;
     }
   },
@@ -64,25 +86,9 @@ const apiService = {
     }
   },
 
-  getAllArchivedNotes: async () => {
-    try {
-      const response = await axios.get(`${BASE_URL}notes/archived`);
-      return response.data;
-    } catch (error) {
-      console.error('Error getting all archived notes:', error);
-      throw error;
-    }
-  },
+  
 
-  getAllActiveNotes: async () => {
-    try {
-      const response = await axios.get(`${BASE_URL}notes/active`);
-      return response.data;
-    } catch (error) {
-      console.error('Error getting all active notes:', error);
-      throw error;
-    }
-  },
+ 
 
   getAllCategories: async () => {
     try {
@@ -97,11 +103,11 @@ const apiService = {
     try {
       const response = await axios.get(`${BASE_URL}notes/by-categories`, {
         params: {
-          categoryName: categoryName,
-          isArchived: isArchived,
+          categoryName,
+          Archived: isArchived // Explicitly pass isArchived as a boolean
         },
       });
-
+  
       return response.data;
     } catch (error) {
       console.error('Error getting notes by categories:', error);

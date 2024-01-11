@@ -1,5 +1,5 @@
 using AutoMapper;
-using Backend.Data.DTO;
+using Backend.Data.DTOs;
 using Backend.Data.Models.Entities;
 using Backend.Data.Models.Repositories;
 using Microsoft.AspNetCore.Mvc;
@@ -152,11 +152,11 @@ public async Task<IActionResult> GetAllActiveNotes()
 }
 
 [HttpGet("by-categories")]
-public async Task<IActionResult> GetNotesByCategories([FromQuery] String categoryName, [FromQuery] bool isArchived = false)
+public async Task<IActionResult> GetNotesByCategories([FromQuery] string categoryName, [FromQuery] bool Archived)
 {
     try
     {
-        var notes = await _categoryRepository.GetNotesByCategoriesAsync(categoryName, isArchived);
+        var notes = await _categoryRepository.GetNotesByCategoriesAsync(categoryName, Archived);
         return Ok(notes);
     }
     catch (Exception ex)

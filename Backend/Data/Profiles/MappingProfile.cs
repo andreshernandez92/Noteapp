@@ -1,5 +1,5 @@
 using AutoMapper;
-using Backend.Data.DTO;
+using Backend.Data.DTOs;
 using Backend.Data.Models.Entities;
 
 namespace Backend.Data.Profiles

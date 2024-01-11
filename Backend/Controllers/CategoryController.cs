@@ -1,5 +1,5 @@
 using AutoMapper;
-using Backend.Data.DTO;
+using Backend.Data.DTOs;
 using Backend.Data.Models.Entities;
 using Backend.Data.Models.Repositories;
 using Microsoft.AspNetCore.Mvc;

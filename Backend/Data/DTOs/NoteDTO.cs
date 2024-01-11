@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 using System.Collections.Generic;
 
-namespace Backend.Data.DTO
+namespace Backend.Data.DTOs
 {
 public class NoteDTO
 {
