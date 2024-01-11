@@ -3,6 +3,8 @@ using Backend.Data.DTO;
 using Backend.Data.Models.Entities;
 using Backend.Data.Models.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using Backend.Data.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Controllers
 {
@@ -14,58 +16,141 @@ namespace Backend.Controllers
         private readonly CategoryRepository _categoryRepository;
         private readonly IMapper _mapper;
 
-        public NotesController(NoteRepository noteRepository, CategoryRepository categoryRepository, IMapper mapper)
+          private readonly StoreContext _context;
+        public NotesController(NoteRepository noteRepository, CategoryRepository categoryRepository, IMapper mapper,StoreContext context)
         {
             _noteRepository = noteRepository;
             _categoryRepository = categoryRepository;
             _mapper = mapper;
+             _context = context;
         }
 
-        [HttpGet("active")]
-        public ActionResult<IEnumerable<NoteDTO>> GetActiveNotes()
+    [HttpPost("create")]  // Explicitly specify the HTTP method
+    public async Task<IActionResult> CreateNoteWithCategories([FromBody] NoteDTO noteDto)
+    {
+        if (noteDto == null)
         {
-            var activeNotes = _noteRepository.GetActiveNotes();
-            var activeNotesDTO = _mapper.Map<IEnumerable<NoteDTO>>(activeNotes);
-            return Ok(activeNotesDTO);
+            return BadRequest("Invalid note data");
         }
 
-        [HttpGet("archived")]
-        public ActionResult<IEnumerable<NoteDTO>> GetArchivedNotes()
+        try
         {
-            var archivedNotes = _noteRepository.GetArchivedNotes();
-            var archivedNotesDTO = _mapper.Map<IEnumerable<NoteDTO>>(archivedNotes);
-            return Ok(archivedNotesDTO);
-        }
+            var noteEntity = _mapper.Map<Note>(noteDto);
+            await _noteRepository.CreateNoteWithCategoriesAsync(noteEntity, noteDto.Categories.Select(c => c.Name).ToList());
+            var createdNoteDto = _mapper.Map<NoteDTO>(noteEntity);
 
-        [HttpPost]
-        public ActionResult AddNote([FromBody] NoteDTO noteDTO)
+            return Ok(CreatedAtAction(nameof(GetNoteById), new { id = createdNoteDto.Id }, createdNoteDto));
+        }
+        catch (Exception ex)
         {
-            var note = _mapper.Map<Note>(noteDTO);
-            _noteRepository.AddNoteAsync(note);
-            return Ok("Note added successfully.");
+            // Handle exception and log if necessary
+            Console.WriteLine(ex);
+            return StatusCode(500, "Internal server error");
         }
+    }
 
-        [HttpPut("{id}")]
-        public ActionResult UpdateNote(int id, [FromBody] NoteDTO updatedNoteDTO)
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetNoteById(int id)
+    {
+        var noteEntity = await _noteRepository.GetNoteByIdAsync(id);
+
+        if (noteEntity == null)
         {
-            var existingNote = _noteRepository.GetNoteById(id);
-
-            if (existingNote == null)
-                return NotFound();
-
-            _mapper.Map(updatedNoteDTO, existingNote);
-
-            _noteRepository.UpdateNote(existingNote);
-
-            return Ok("Note updated successfully.");
+            return NotFound();
         }
 
-        [HttpDelete("{id}")]
-        public ActionResult DeleteNote(int id)
+        var noteDto = _mapper.Map<NoteDTO>(noteEntity);
+
+        return Ok(noteDto);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAllNotes()
+    {
+        var notes = await _noteRepository.GetAllNotesAsync();
+
+        if (notes == null || !notes.Any())
         {
-            _noteRepository.DeleteNote(id);
-            return Ok("Note deleted successfully.");
+            return NotFound("No notes found.");
         }
+
+        return Ok(notes);
+    }
+[HttpDelete("remove-category-from-note")]
+public async Task<IActionResult> RemoveCategoryFromNoteAsync([FromQuery] int noteId, [FromQuery] int categoryId)
+{
+    try
+    {
+        await _noteRepository.RemoveCategoryFromNoteAsync(noteId, categoryId);
+        return Ok();
+    }
+    catch (Exception ex)
+    {
+        // Log or handle the exception as needed
+        Console.WriteLine($"Error removing category from note: {ex.Message}");
+        return StatusCode(500, "Internal server error");
+    }
+}
+[HttpPut("update-with-categories/{id}")]
+public async Task<IActionResult> UpdateNoteWithCategoriesAsync(int id, [FromBody] UpdateNoteDTO updatedNote)
+{
+    try
+    {
+        await _noteRepository.UpdateNoteWithCategoriesAsync(id, updatedNote);
+        return Ok();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error updating note with categories: {ex.Message}");
+        return StatusCode(500, "Internal server error");
+    }
+}
+
+[HttpDelete("{id}")]
+public async Task<IActionResult> DeleteNoteAsync(int id)
+{
+    try
+    {
+        await _noteRepository.DeleteNoteAsync(id);
+        return Ok();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error deleting note: {ex.Message}");
+        return StatusCode(500, "Internal server error");
+    }
+}
+
+[HttpGet("archived")]
+public async Task<IActionResult> GetAllArchivedNotes()
+{
+    try
+    {
+        var archivedNotes = await _noteRepository.GetArchivedNotesAsync();
+        return Ok(archivedNotes);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error getting archived notes: {ex.Message}");
+        return StatusCode(500, "Internal server error");
+    }
+}
+
+[HttpGet("active")]
+public async Task<IActionResult> GetAllActiveNotes()
+{
+    try
+    {
+        var activeNotes = await _noteRepository.GetActiveNotesAsync();
+        return Ok(activeNotes);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error getting active notes: {ex.Message}");
+        return StatusCode(500, "Internal server error");
+    }
+}
+
 
     }
 }

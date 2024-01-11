@@ -12,16 +12,29 @@ namespace Backend.Data.Models
         public DbSet<Note> Notes { get; set; }
         public DbSet<Category> Categories { get; set; }
 
+        public DbSet<NoteCategories> NoteCategories { get; set; }
+
         public StoreContext(DbContextOptions<StoreContext> options) : base(options)
         {
+      
         }
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+         // Many-to-many relationship between Note and Category
+    modelBuilder.Entity<NoteCategories>()
+        .HasKey(nc => new { nc.NoteId, nc.CategoryId });
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.Entity<Note>()
-            .HasMany(n => n.Categories)
-            .WithMany(c => c.Notes)
-            .UsingEntity(j => j.ToTable("NoteCategory"));
-        }
+    modelBuilder.Entity<NoteCategories>()
+        .HasOne(nc => nc.Note)
+        .WithMany(n => n.NoteCategories)
+        .HasForeignKey(nc => nc.NoteId)
+        .OnDelete(DeleteBehavior.Cascade); // <-- Add this line for cascading delete
+
+    modelBuilder.Entity<NoteCategories>()
+        .HasOne(nc => nc.Category)
+        .WithMany(c => c.NoteCategories)
+        .HasForeignKey(nc => nc.CategoryId)
+        .OnDelete(DeleteBehavior.Cascade); // <-- Add this line for cascading delete
+    }
     }
 }

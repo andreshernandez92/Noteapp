@@ -1,11 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace Backend.Migrations
 {
     /// <inheritdoc />
-    public partial class Initialcreation : Migration
+    public partial class InitialCreation : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -31,7 +32,9 @@ namespace Backend.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     Title = table.Column<string>(type: "TEXT", nullable: false),
                     Content = table.Column<string>(type: "TEXT", nullable: false),
-                    Archived = table.Column<bool>(type: "INTEGER", nullable: false)
+                    Archived = table.Column<bool>(type: "INTEGER", nullable: false),
+                    TimeCreated = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    TimeModified = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -39,40 +42,40 @@ namespace Backend.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "NoteCategory",
+                name: "NoteCategories",
                 columns: table => new
                 {
-                    CategoriesCategoryId = table.Column<int>(type: "INTEGER", nullable: false),
-                    NotesId = table.Column<int>(type: "INTEGER", nullable: false)
+                    NoteId = table.Column<int>(type: "INTEGER", nullable: false),
+                    CategoryId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_NoteCategory", x => new { x.CategoriesCategoryId, x.NotesId });
+                    table.PrimaryKey("PK_NoteCategories", x => new { x.NoteId, x.CategoryId });
                     table.ForeignKey(
-                        name: "FK_NoteCategory_Categories_CategoriesCategoryId",
-                        column: x => x.CategoriesCategoryId,
+                        name: "FK_NoteCategories_Categories_CategoryId",
+                        column: x => x.CategoryId,
                         principalTable: "Categories",
                         principalColumn: "CategoryId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_NoteCategory_Notes_NotesId",
-                        column: x => x.NotesId,
+                        name: "FK_NoteCategories_Notes_NoteId",
+                        column: x => x.NoteId,
                         principalTable: "Notes",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_NoteCategory_NotesId",
-                table: "NoteCategory",
-                column: "NotesId");
+                name: "IX_NoteCategories_CategoryId",
+                table: "NoteCategories",
+                column: "CategoryId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "NoteCategory");
+                name: "NoteCategories");
 
             migrationBuilder.DropTable(
                 name: "Categories");

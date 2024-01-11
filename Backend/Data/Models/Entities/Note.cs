@@ -8,15 +8,15 @@ using System.Collections.Generic;
 
 namespace Backend.Data.Models.Entities
 {
-    public class Note
-    {
-        public int Id { get; set; }
-        public string Title { get; set; }
-        public string Content { get; set; }
-        public bool Archived { get; set; }
-
-        // Navigation property for the many-to-many relationship with Category
-        public List<Category> Categories { get; set; }
-    }
+public class Note
+{
+    public int Id { get; set; }
+    public string Title { get; set; }
+    public string Content { get; set; }
+    public bool Archived { get; set; }
+    public DateTime TimeCreated { get; set; }
+    public DateTime TimeModified { get; set; }
+    public List<NoteCategories> NoteCategories { get; set; }
+}
 }
 

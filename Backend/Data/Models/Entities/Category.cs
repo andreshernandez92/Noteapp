@@ -8,14 +8,13 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Backend.Data.Models.Entities
 {
-    public class Category
-    {
-        public int CategoryId { get; set; }
+using System;
 
-        public string Name { get; set; }
-
-        // Navigation property for the many-to-many relationship with Note
-        public List<Note> Notes { get; set; }
-    }
+public class Category
+{
+    public int CategoryId { get; set; }
+    public string Name { get; set; }
+    public List<NoteCategories> NoteCategories { get; set; }
+}
 }
 

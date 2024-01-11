@@ -8,18 +8,24 @@ namespace Backend.Data.Profiles
     {
         public MappingProfile()
         {
-            // Mapping for Note and NoteDTO
-            CreateMap<Note, NoteDTO>()
-                .ForMember(dest => dest.Categories, opt => opt.MapFrom(src => src.Categories));
+        
+        // Note to NoteDTO
+        CreateMap<Note, NoteDTO>()
+            .ForMember(dest => dest.Categories, opt => opt.MapFrom(src => src.NoteCategories.Select(nc => nc.Category)));
 
-            CreateMap<NoteDTO, Note>()
-                .ForMember(dest => dest.Categories, opt => opt.MapFrom(src => src.Categories));
+        // Category to CategoryDTO
+        CreateMap<Category, CategoryDTO>();
 
-            // Mapping for Category and CategoryDTO
-            CreateMap<Category, CategoryDTO>();
-            CreateMap<CategoryDTO, Category>();
-        }
+        // NoteDTO to Note
+        CreateMap<NoteDTO, Note>()
+            .ForMember(dest => dest.NoteCategories, opt => opt.MapFrom(src => src.Categories.Select(catDto => new NoteCategories { Category = new Category { Name = catDto.Name } })));
+
+        // CategoryDTO to Category
+        CreateMap<CategoryDTO, Category>()
+            .ForMember(dest => dest.NoteCategories, opt => opt.Ignore()); // Ignore NoteCategories during mapping
+
     }
+}
 }
 
 
