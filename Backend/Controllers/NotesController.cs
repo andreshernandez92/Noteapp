@@ -151,6 +151,21 @@ public async Task<IActionResult> GetAllActiveNotes()
     }
 }
 
+[HttpGet("by-categories")]
+public async Task<IActionResult> GetNotesByCategories([FromQuery] String categoryName, [FromQuery] bool isArchived = false)
+{
+    try
+    {
+        var notes = await _categoryRepository.GetNotesByCategoriesAsync(categoryName, isArchived);
+        return Ok(notes);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error getting notes by categories: {ex.Message}");
+        return StatusCode(500, "Internal server error");
+    }
+}
+
 
     }
 }

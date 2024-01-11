@@ -70,6 +70,35 @@ public async Task UpdateCategoryAsync(CategoryDTO updatedCategory)
     }
 }
 
+public async Task<List<NoteDTO>> GetNotesByCategoriesAsync(String categoryName, bool isArchived = false)
+{
+    var query = _context.Notes
+        .Include(n => n.NoteCategories)
+        .ThenInclude(nc => nc.Category)
+        .Where(n => n.Archived == isArchived);
+
+    if (categoryName != null && categoryName.Any())
+    {
+        query = query.Where(n => n.NoteCategories.Any(nc => categoryName.Contains(nc.Category.Name)));
+    }
+
+    var notes = await query
+        .Select(n => new NoteDTO
+        {
+            Id = n.Id,
+            Title = n.Title,
+            Content = n.Content,
+            Archived = n.Archived,
+            TimeCreated = n.TimeCreated,
+            TimeModified = n.TimeModified,
+            Categories = n.NoteCategories
+                .Select(nc => new CategoryDTO { Id = nc.Category.CategoryId, Name = nc.Category.Name })
+                .ToList()
+        })
+        .ToListAsync();
+
+    return notes;
+}
 
 
 
