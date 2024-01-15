@@ -1,0 +1,26 @@
+# fly.toml app configuration file generated for noteapp-ahernandez92 on 2024-01-14T21:31:00-06:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = "noteapp-ahernandez92"
+primary_region = "mia"
+
+[build]
+  image = "ahernandez92/noteapp"
+
+[env]
+  ASPNETCORE_URLS = "http://+:8080"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 256

@@ -1,14 +1,14 @@
 // apiService.js
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:5001/api/';
+axios.defaults.baseURL =  process.env.REACT_APP_API_URL
 
 const apiService = {
   createNoteWithCategories: async (noteDTO) => {
     try {
    
       
-      const response = await axios.post(`${BASE_URL}notes/create`, noteDTO);
+      const response = await axios.post(`notes/create`, noteDTO);
       return response.data;
     } catch (error) {
       console.error('Error creating note with categories:', error);
@@ -18,7 +18,7 @@ const apiService = {
 
   getNoteById: async (id) => {
     try {
-      const response = await axios.get(`${BASE_URL}notes/${id}`);
+      const response = await axios.get(`notes/${id}`);
       return response.data;
     } catch (error) {
       console.error('Error getting note by ID:', error);
@@ -28,7 +28,7 @@ const apiService = {
 
   getAllNotes: async () => {
     try {
-      const response = await axios.get(`${BASE_URL}notes`);
+      const response = await axios.get(`notes`);
       return response.data;
     } catch (error) {
       console.error('Error getting all notes:', error);
@@ -38,7 +38,7 @@ const apiService = {
 
   getAllActiveNotes: async () => {
     try {
-      const response = await axios.get(`${BASE_URL}notes/active`);
+      const response = await axios.get(`notes/active`);
       return response.data;
     } catch (error) {
       console.error('Error getting all active notes:', error);
@@ -48,7 +48,7 @@ const apiService = {
 
   getAllArchivedNotes: async () => {
     try {
-      const response = await axios.get(`${BASE_URL}notes/archived`);
+      const response = await axios.get(`notes/archived`);
       return response.data;
     } catch (error) {
       console.error('Error getting all archived notes:', error);
@@ -58,7 +58,7 @@ const apiService = {
 
   deleteNote: async (id) => {
     try {
-      const response = await axios.delete(`${BASE_URL}notes/${id}`);
+      const response = await axios.delete(`notes/${id}`);
       return response.data;
     } catch (error) {
       console.error('Error deleting note:', error);
@@ -68,7 +68,7 @@ const apiService = {
 
   updateNoteWithCategories: async (id, updatedNote) => {
     try {
-      const response = await axios.put(`${BASE_URL}notes/update-with-categories/${id}`, updatedNote);
+      const response = await axios.put(`notes/update-with-categories/${id}`, updatedNote);
       return response.data;
     } catch (error) {
       console.error('Error updating note with categories:', error);
@@ -78,7 +78,7 @@ const apiService = {
 
   removeCategoryFromNote: async (noteId, categoryId) => {
     try {
-      const response = await axios.delete(`${BASE_URL}notes/remove-category-from-note?noteId=${noteId}&categoryId=${categoryId}`);
+      const response = await axios.delete(`notes/remove-category-from-note?noteId=${noteId}&categoryId=${categoryId}`);
       return response.data;
     } catch (error) {
       console.error('Error removing category from note:', error);
@@ -92,7 +92,7 @@ const apiService = {
 
   getAllCategories: async () => {
     try {
-      const response = await axios.get(`${BASE_URL}notes/get-all`);
+      const response = await axios.get(`notes/get-all`);
       return response.data;
     } catch (error) {
       console.error('Error fetching categories:', error);
@@ -101,7 +101,7 @@ const apiService = {
   },
   async getNotesByCategories(categoryName, isArchived) {
     try {
-      const response = await axios.get(`${BASE_URL}notes/by-categories`, {
+      const response = await axios.get(`notes/by-categories`, {
         params: {
           categoryName,
           Archived: isArchived // Explicitly pass isArchived as a boolean
@@ -115,7 +115,7 @@ const apiService = {
     }
   },updateNoteArchiveStatus: async (noteId, archive) => {
     try {
-      const response = await axios.patch(`${BASE_URL}/notes/${noteId}`, { archived: archive });
+      const response = await axios.patch(`notes/${noteId}`, { archived: archive });
       return response.data;
     } catch (error) {
       throw error;
